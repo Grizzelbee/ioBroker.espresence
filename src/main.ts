@@ -115,7 +115,7 @@ class Espresence extends utils.Adapter {
     }
 
     processMsg(adapter : object, topic : string, payload : Buffer){
-        let value = payload.toString();
+        let value : any = payload.toString();
         const objData = {
             type: 'state',
             common: {'name': topic.split('/').pop(),
