@@ -1,16 +1,56 @@
 {
+    "type" : "tabs",
     "i18n": true,
-    "type": "panel",
     "items": {
-        "option1": {
-            "type": "checkbox",
-            "label": "option1",
-            "newLine": true
+        "mainTab": {
+            "type": "panel",
+            "label": "Main config",
+            "items": {
+                "broker": {
+                    "type": "text",
+                    "label": "MQTT broker",
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 3
+                },
+                "port": {
+                    "type": "number",
+                    "min": 1,
+                    "max": 65565,
+                    "label": "Port",
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 3
+                },
+                "user": {
+                    "type": "text",
+                    "label": "MQTT user",
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 3
+                },
+                "password": {
+                    "type": "password",
+                    "label": "MQTT broker password",
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 3
+                }
+            }
         },
-        "option2": {
-            "type": "text",
-            "label": "option2",
-            "newLine": true
+        "translationTab": {
+            "type": "panel",
+            "label": "User translation",
+            "items": {
+                "user name": {
+                    "type": "text",
+                    "label": "User Name"
+                },
+                "BTLE_ID": {
+                    "type": "text",
+                    "label": "BTLE device ID"
+                }
+            }
         }
     }
 }
