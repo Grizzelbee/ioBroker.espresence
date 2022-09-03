@@ -1,0 +1,94 @@
+{
+    "common": {
+        "name": "espresence",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "zh-cn": "首次出版"
+            }
+        },
+        "title": "ESPresence",
+        "titleLang": {
+            "en": "ESPresence",
+            "de": "ESPräsenz",
+            "ru": "ESPsence",
+            "pt": "ESPesse",
+            "nl": "ESPaanwezigheid",
+            "fr": "ESPrésence",
+            "it": "L'Essenza",
+            "es": "ESPresencia",
+            "pl": "ESObecność",
+            "zh-cn": "存在感"
+        },
+        "desc": {
+            "en": "Presence detection with ESP32",
+            "de": "Anwesenheitserkennung mit ESP32",
+            "ru": "Обнаружение присутствия с ESP32",
+            "pt": "Detecção de presença com ESP32",
+            "nl": "Aanwezigheidsdetectie met ESP32",
+            "fr": "Détection de présence avec ESP32",
+            "it": "Rilevamento di presenza con ESP32",
+            "es": "Detección de presencia con ESP32",
+            "pl": "Wykrywanie obecności za pomocą ESP32",
+            "zh-cn": "ESP32 的存在检测"
+        },
+        "authors": [
+            "grizzelbee <open.source@hingsen.de>"
+        ],
+        "keywords": [
+            "espresence",
+            "presence",
+            "detection",
+            "esp32"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "build/main.js",
+        "icon": "espresence.svg",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/grizzelbee/ioBroker.espresence/main/admin/espresence.svg",
+        "readme": "https://github.com/grizzelbee/ioBroker.espresence/blob/main/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "iot-systems",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "push",
+        "adminUI": {
+            "config": "json"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=3.3.22"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=5.1.13"
+            }
+        ]
+    },
+    "native": {
+        "mqttBroker": "",
+        "mqttPort": 1883,
+        "user": "",
+        "password": ""
+    },
+    "encryptedNative": [
+        "password"
+    ],
+    "protectedNative": [
+        "password"
+    ],
+    "objects": [],
+    "instanceObjects": []
+}

@@ -1,0 +1,44 @@
+{
+    "cli": true,
+    "target": "directory",
+    "adapterName": "espresence",
+    "title": "ESPresence",
+    "description": "Presence detection with ESP32",
+    "keywords": [
+        "espresence",
+        "presence",
+        "detection",
+        "esp32"
+    ],
+    "expert": "no",
+    "features": [
+        "adapter"
+    ],
+    "adminFeatures": [],
+    "type": "iot-systems",
+    "startMode": "daemon",
+    "connectionType": "local",
+    "dataSource": "push",
+    "connectionIndicator": "no",
+    "language": "TypeScript",
+    "nodeVersion": "14",
+    "adminUi": "json",
+    "tools": [
+        "ESLint"
+    ],
+    "releaseScript": "yes",
+    "devServer": "yes",
+    "devServerPort": 8080,
+    "indentation": "Space (4)",
+    "quotes": "double",
+    "es6class": "yes",
+    "authorName": "grizzelbee",
+    "authorGithub": "grizzelbee",
+    "authorEmail": "open.source@hingsen.de",
+    "gitRemoteProtocol": "HTTPS",
+    "gitCommit": "no",
+    "defaultBranch": "main",
+    "license": "MIT License",
+    "dependabot": "no",
+    "creatorVersion": "2.2.0"
+}
