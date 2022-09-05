@@ -1,5 +1,11 @@
 {
     "espresence adapter settings": "espresence的适配器设置",
-    "option1": "选项1",
-    "option2": "选项2"
+    "Main config": "主要配置",
+    "If you like this adapter, please consider a donation to support my work.": "如果您喜欢这个适配器，请考虑捐款以支持我的工作。",
+    "MQTT broker password": "MQTT 代理密码",
+    "User translations": "用户翻译",
+    "name": "姓名",
+    "Bluetooth ID": "蓝牙ID",
+    "MQTT broker": "MQTT 代理",
+    "MQTT user": "MQTT 用户"
 }

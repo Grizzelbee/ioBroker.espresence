@@ -1,5 +1,11 @@
 {
     "espresence adapter settings": "Ustawienia adaptera dla espresence",
-    "option1": "opcja 1",
-    "option2": "Opcja 2"
+    "Main config": "Konfiguracja główna",
+    "If you like this adapter, please consider a donation to support my work.": "Jeśli podoba Ci się ten adapter, rozważ darowiznę na wsparcie mojej pracy.",
+    "MQTT broker password": "Hasło brokera MQTT",
+    "User translations": "Tłumaczenia użytkownika",
+    "name": "Nazwa",
+    "Bluetooth ID": "Identyfikator Bluetooth",
+    "MQTT broker": "Broker MQTT",
+    "MQTT user": "Użytkownik MQTT"
 }
