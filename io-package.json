@@ -78,10 +78,20 @@
         ]
     },
     "native": {
-        "mqttBroker": "",
-        "mqttPort": 1883,
-        "user": "",
-        "password": ""
+        "main": [
+            {
+                "mqttBroker": "",
+                "mqttPort": 1883,
+                "user": "",
+                "password": ""
+            }
+        ],
+        "devices": [
+            {
+                "name": "",
+                "BTLE_ID": ""
+            }
+        ]
     },
     "encryptedNative": [
         "password"
