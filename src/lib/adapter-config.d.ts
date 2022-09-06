@@ -8,6 +8,8 @@ declare global {
             mqttPort: number;
             user:string;
             password:string;
+            name:string;
+            BTLE_ID:string;
         }
     }
 }
