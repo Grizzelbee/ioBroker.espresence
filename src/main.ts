@@ -7,16 +7,18 @@
 import * as utils from '@iobroker/adapter-core';
 import * as mqtt from 'mqtt';
 
-
-// Load your modules here, e.g.:
-// import * as fs from 'fs';
+// interfaces
+interface Presence {
+    room  : string,
+    names : Array<string>;
+    lastSeen : number;
+}
 
 class Espresence extends utils.Adapter {
-/*
-* Brainstorming:
-* A mqtt broker is needed for the ESPs to connect to -> setup ioBroker.MQTT-adapter as mqtt-Broker (Server)
-* A mqtt client is needed to connect against the broker to receive the messages of the ESPs-> ESPresence adapter must connect against MQTT-Adapter
-* */
+    // class members
+    _presence : Presence;
+    _timeouts : object;
+
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -27,12 +29,59 @@ class Espresence extends utils.Adapter {
         // this.on('objectChange', this.onObjectChange.bind(this));
         // this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
+        // init
+        this._presence = {};
+        this._timeouts = {};
     }
 
+    initRoom(room : string) : void {
+        this._presence[room] = [];
+    }
+
+    getPeopleInRoom(room : string) : number {
+        return this._presence[room].length;
+    }
+
+    getPresenceInRoom(room :  string) : boolean {
+        return this._presence[room].length > 0;
+    }
+
+    getNamesInRoom(room : string) : string {
+        return this._presence[room].join(',');
+    }
+
+    setNamesInRoom(room : string, newJoiner : string) : void {
+        if (!this._presence[room].includes(newJoiner)){
+            this._presence[room].push(newJoiner);
+            Object.keys(this._presence).forEach( (key)=>{
+                this.log.debug(`Testing whether ${newJoiner} is in room ${key}`);
+                if (key != room){
+                    if (this.isPersonInRoom(newJoiner, key)){
+                        this.removeNameFromRoom(key , newJoiner);
+                    }
+                }
+            })
+        }
+        this._presence[room].lastSeen = new Date();
+    }
+
+    isPersonInRoom(person: string, room : string) : boolean {
+        return this._presence[room].includes(person);
+    }
+
+    removeNameFromRoom(room : string, name : string) : void {
+        if (typeof this._presence[room] === 'undefined') return;
+        const index = this._presence[room].indexOf(name);
+        if (index > -1) { // only splice array when item is found
+            this._presence[room].splice(index, 1); // 2nd parameter means remove one item only
+        }
+    }
     /**
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
+        this.setup(this);
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const adapter = this;
         const adapterLog = this.log;
         const adapterConfig = this.config;
@@ -48,18 +97,18 @@ class Espresence extends utils.Adapter {
             password: adapterConfig.password,
         }
         // Initialize your adapter here
-        adapterLog.info(`Connecting to MQTT broker [${adapterConfig.mqttBroker}:${adapterConfig.mqttPort}], user:[${adapterConfig.user}], password:[***]`);
+        adapterLog.info(`Connecting to MQTT broker [${adapterConfig.mqttBroker}:${adapterConfig.mqttPort}]`);
         const client = mqtt.connect(`mqtt://${adapterConfig.mqttBroker}:${adapterConfig.mqttPort}`, options);
 
         client.on('connect', function (connACK) {
             if (connACK.returnCode===0){
                 adapterLog.info(`MQTT connection to broker [${adapterConfig.mqttBroker}:${adapterConfig.mqttPort}] established.`);
                 // Subscribes to the status topic to receive updates
-                client.subscribe('/#', function (err) {
-                    if (!err){
-                        adapterLog.info(`Subscribed to all topics.`);
+                client.subscribe('#', function(err, granted) {
+                    if (err) {
+                        adapterLog.error(`Error during subscription: ${JSON.stringify(err)}`);
                     } else {
-                        adapterLog.info(`Error during subscription: ${JSON.stringify(err)}`);
+                        adapterLog.debug(`Subscribed to topic ${granted[0].topic}.`);
                     }
                 });
             } else {
@@ -69,11 +118,52 @@ class Espresence extends utils.Adapter {
 
         client.on('message', function (topic, payload) {
             adapterLog.debug(`MQTT topic [${topic}] received message: ${payload.toString()}`);
-            adapter.processMsg(adapter, topic, payload);
+            const topicArray = topic.split('/');
+            const baseTopic   = topicArray.shift();
+            const level2Topic = topicArray.shift();
+            const newTopic = topicArray.join('.');
+            let   room = null;
+            if (level2Topic === 'rooms') {
+                const room = topicArray.shift();
+                if (adapter._presence[room]) {
+                    return;
+                } else {
+                    adapter.initRoom(room);
+                    adapter.setPresenceInRoom(adapter, room);
+                }
+            }
+            if (level2Topic === 'devices'){
+                room = topicArray.pop();
+                if (!adapter._presence[room]) return;
+                const device    : string = topicArray.pop() || 'NoDevice';
+                const newJoiner : string|undefined = adapter.getUserByBTLEID(adapterConfig, device);
+                if (newJoiner && room) {
+                    // adapterLog.debug(`Topic-Parts: Base-Topic: ${baseTopic}, New-Topic: ${newTopic}, Room: ${room}, Newjoiner: ${newJoiner}`);
+                    clearInterval(adapter._timeouts[`${room}_${newJoiner}`]);
+                    adapter.setNamesInRoom(room, newJoiner);
+                    adapter.setPresenceInRoom(adapter, room);
+                    const timeout : number = 7000;
+                    adapter._timeouts[`${room}_${newJoiner}`] = setInterval((adapter: Espresence, rooms: string, name: string) => {
+                        adapterLog.debug(`Timeout! Room: ${room}, User: ${name}, Now: ${Date.now()}, lastSeen: ${adapter._presence[room].lastSeen}, Diff: ${Date.now() - adapter._presence[room].lastSeen}`);
+                        if ( (Date.now() - adapter._presence[room].lastSeen) > timeout+10 ){
+                            adapter.removeNameFromRoom(room, name);
+                            adapter.setPresenceInRoom(adapter, room);
+                        }
+                    }, 2000, adapter, room, newJoiner);
+                } else{
+                    adapterLog.warn(`Person in room (${room}) is unknown. Please add device with BTLE_ID[${device}] to the configuration.`);
+                }
+            } else {
+                // adapterLog.debug(`Topic-Parts: Base-Topic: ${baseTopic}, New-Topic: ${newTopic}`);
+                // if (baseTopic === 'homeassistant' || baseTopic === 'info') return;
+                return;
+            }
+            adapterLog.debug(`New msg topic: ${newTopic}`);
+            adapter.processMsg(adapter, newTopic, payload.toString() );
         });
 
         client.on('error', function (error) {
-            adapterLog.debug('MQTT server returned error: ' + error);
+            adapterLog.warn('MQTT server returned error: ' + error);
         });
 
         client.on('reconnect', function () {
@@ -101,24 +191,80 @@ class Espresence extends utils.Adapter {
 
     }
 
-    isJsonString(str : string): boolean {
-        try {
-            JSON.parse(str);
-        } catch (e) {
-            return false;
+    setup(adapter : Espresence) : void {
+        const objData : ioBroker.SettableObject = {
+            type: 'folder',
+            common: {'name': 'Presence folder',
+                'read': true,
+                'write': false,
+                type: 'object'
+            },
+            native: {}
+        };
+        adapter.createOrExtendObject(adapter, `presence`, objData, null);
+    }
+
+    async setPresenceInRoom(adapter : Espresence, room : string) : Promise<void> {
+        await adapter.createOrExtendObject(adapter, `presence.${room}`, {
+            type: 'state',
+            common: {'name': '',
+                'read': true,
+                'write': false,
+                'role': 'indicator',
+                'type': 'boolean'
+            },
+            native: {}
+        }, adapter.getPresenceInRoom(room));
+        await adapter.createOrExtendObject(adapter, `presence.${room}.people_in_room`, {
+            type: 'state',
+            common: {'name': '',
+                'read': true,
+                'write': false,
+                'role': 'value',
+                'type': 'number'
+            },
+            native: {}
+        }, adapter.getPeopleInRoom(room));
+        await adapter.createOrExtendObject(adapter, `presence.${room}.names`, {
+            type: 'state',
+            common: {'name': '',
+                'read': true,
+                'write': false,
+                'role': 'value',
+                'type': 'string'
+            },
+            native: {}
+        }, adapter.getNamesInRoom(room));
+    }
+
+    getUserByBTLEID(adapterConfig : Espresence.AdapterConfig, BTLE_ID : string) : string|undefined{
+        for (let n=0; n < adapterConfig.devices.length; n++){
+            if (adapterConfig.devices[n].BTLE_ID === BTLE_ID)
+                return adapterConfig.devices[n].name;
         }
-        return true;
     }
 
     isNumber(str : string): boolean {
         return !Number.isNaN( Number.parseFloat(str) );
     }
 
-    processMsg(adapter : object, topic : string, payload : Buffer){
-        let value : any = payload.toString();
-        const objData = {
+    processObject(adapter : Espresence, topic : string, objData : ioBroker.SettableObject, payload : object) : void{
+        if (typeof payload === 'undefined' || payload === null) return;
+        adapter.createOrExtendObject(adapter, topic, objData, null);
+        Object.keys(payload).forEach(function(key) {
+            objData.type = 'state';
+            objData.common.role = `value`;
+            objData.common.type = `${typeof payload[key]}`;
+            adapter.createOrExtendObject(adapter, topic + `.${key}`, objData, payload[key]);
+        })
+    }
+
+    processMsg(adapter : Espresence, topic : string, payload : string) : void{
+        if (typeof payload === 'undefined' || payload === null) return;
+        let value : any = payload;
+        const objData : ioBroker.SettableObject = {
             type: 'state',
-            common: {'name': topic.split('/').pop(),
+            common: {'name': topic.split('.').pop() || '',
                 'read': true,
                 'write': false,
                 'role': 'value',
@@ -126,20 +272,30 @@ class Espresence extends utils.Adapter {
             },
             native: {}
         };
-        if ( adapter.isJsonString(value) ) {
-            const jPayload = JSON.parse(value);
+
+        if (topic.split('.').shift() === 'devices'){
             objData.type = 'folder';
-            objData.role='';
-            adapter.processMsg(adapter, topic, objData, jPayload)
+            objData.common.role='';
+            adapter.processObject(adapter, topic, objData, JSON.parse(payload) );
         }
+
+        if (topic.split('.').pop() === 'telemetry'){
+            objData.type = 'folder';
+            objData.common.role='';
+            adapter.processObject(adapter, topic, objData, JSON.parse(payload) );
+        }
+
         if ( adapter.isNumber(value) ){
-            objData.type='number';
+            objData.common.type='number';
             value = Number.parseFloat(value);
         }
+        if (value==='NaN') value=null;
 
-
-        adapter.createOrExtendObject(adapter, topic.split('/').join('.'), objData, value)
+        adapter.createOrExtendObject(adapter, topic, objData, value);
     }
+
+
+
 
     /**
      * Function Create or extend object
@@ -152,7 +308,7 @@ class Espresence extends utils.Adapter {
      * @param {object} objData details to the datapoint to be created (Device, channel, state, ...)
      * @param {any} value value of the datapoint
      */
-    createOrExtendObject(adapter, id, objData, value) {
+    createOrExtendObject(adapter : Espresence, id : string, objData : ioBroker.SettableObject, value : any) : void{
         adapter.getObject(id, function (err, oldObj) {
             if (!err && oldObj) {
                 if ( objData.name === oldObj.common.name ){
