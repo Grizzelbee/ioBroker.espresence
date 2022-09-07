@@ -82,7 +82,6 @@ class Espresence extends utils.Adapter {
       username: adapterConfig.user,
       password: adapterConfig.password
     };
-    adapterLog.warn(`Adapter configuration: ${JSON.stringify(adapterConfig)}`);
     adapterLog.info(`Connecting to MQTT broker [${adapterConfig.broker}:${adapterConfig.port}]`);
     const client = mqtt.connect(`mqtt://${adapterConfig.broker}:${adapterConfig.port}`, options);
     client.on("connect", function(connACK) {
