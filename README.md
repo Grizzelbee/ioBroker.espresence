@@ -12,15 +12,16 @@
 
 ## ESPresence adapter for ioBroker
 
-Presence detection with ESP32
+Presence detection on room level with ESP32
 
 This projects implements an ioBroker adapter for the ESPresence project, which can be found [here](https://espresense.com/)
 This project is currently (2022-09-01) in a pretty early state. 
 
 ## Prerequisites:
 1. ESP32 devices flashed with ESPresense 
-2. MQTT broker (server) like mosquitto, ioBroker.mqtt-adapter in server mode, or any other
-3. 
+2. MQTT broker (server) like mosquitto, ioBroker.mqtt-adapter in server mode, or any other up and running 
+3. ESP devices set up und connected to the mqtt broker
+
 
 ## Changelog
 <!--
@@ -29,7 +30,10 @@ This project is currently (2022-09-01) in a pretty early state.
 -->
 
 ### **WORK IN PROGRESS**
-* (grizzelbee) initial release
+
+
+### v 0.1.0 (2022-09-07) (In the lap of the gods)
+* (grizzelbee) initial release - first basically working version
 
 ## License
 MIT License

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.espresence",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Presence detection with ESP32",
   "author": {
     "name": "grizzelbee",
