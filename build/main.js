@@ -82,11 +82,12 @@ class Espresence extends utils.Adapter {
       username: adapterConfig.user,
       password: adapterConfig.password
     };
-    adapterLog.info(`Connecting to MQTT broker [${adapterConfig.mqttBroker}:${adapterConfig.mqttPort}]`);
-    const client = mqtt.connect(`mqtt://${adapterConfig.mqttBroker}:${adapterConfig.mqttPort}`, options);
+    adapterLog.warn(`Adapter configuration: ${JSON.stringify(adapterConfig)}`);
+    adapterLog.info(`Connecting to MQTT broker [${adapterConfig.broker}:${adapterConfig.port}]`);
+    const client = mqtt.connect(`mqtt://${adapterConfig.broker}:${adapterConfig.port}`, options);
     client.on("connect", function(connACK) {
       if (connACK.returnCode === 0) {
-        adapterLog.info(`MQTT connection to broker [${adapterConfig.mqttBroker}:${adapterConfig.mqttPort}] established.`);
+        adapterLog.info(`MQTT connection to broker [${adapterConfig.broker}:${adapterConfig.port}] established.`);
         client.subscribe("#", function(err, granted) {
           if (err) {
             adapterLog.error(`Error during subscription: ${JSON.stringify(err)}`);

@@ -4,8 +4,8 @@
 declare global {
     namespace ioBroker {
         interface AdapterConfig {
-            mqttBroker: string;
-            mqttPort: number;
+            broker: string;
+            port: number;
             user:string;
             password:string;
             devices : [{

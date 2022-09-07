@@ -2,7 +2,7 @@
     "type" : "tabs",
     "i18n": true,
     "items": {
-        "main": {
+        "_main": {
             "type": "panel",
             "label": "Main config",
             "items": {
